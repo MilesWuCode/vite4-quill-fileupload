@@ -1,15 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import Quill, { QuillOptionsStatic } from "quill";
 import "quill/dist/quill.snow.css";
+import ImageUploader from "quill-image-uploader";
 
 const toolbarOptions = [
-  ["bold", "italic", "underline", "strike"],
-  [{ header: 1 }, { header: 2 }],
+  ["bold", "italic", "underline", "strike"], // toggled buttons
+  ["blockquote", "code-block"],
+
+  [{ header: 1 }, { header: 2 }], // custom button values
   [{ list: "ordered" }, { list: "bullet" }],
-  [{ indent: "-1" }, { indent: "+1" }],
-  // [{ align: [] }],
-  ["link", "image"],
-  ["clean"],
+  [{ script: "sub" }, { script: "super" }], // superscript/subscript
+  [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
+  [{ direction: "rtl" }], // text direction
+
+  [{ size: ["small", false, "large", "huge"] }], // custom dropdown
+  [{ header: [1, 2, 3, 4, 5, 6, false] }],
+
+  [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+  [{ font: [] }],
+  [{ align: [] }],
+
+  ["clean"], // remove formatting button
 ];
 
 const formats = [
@@ -38,14 +49,28 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
 
   useEffect(() => {
     if (editorRef.current) {
+      Quill.register("modules/imageUploader", ImageUploader);
+
       const newEditor = new Quill(editorRef.current, {
         modules: {
           toolbar: toolbarOptions,
+          imageUploader: {
+            upload: (file: File) => {
+              return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  resolve(
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/480px-JavaScript-logo.png"
+                  );
+                }, 3500);
+              });
+            },
+          },
         },
         formats: formats,
         theme: "snow",
       } as QuillOptionsStatic);
 
+      // 預設值
       newEditor.clipboard.dangerouslyPasteHTML(defaultValue || "");
 
       setEditor(newEditor);
@@ -68,7 +93,7 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
     }
   }, [editor, onChange]);
 
-  return <div style={{ height: "300px" }} ref={editorRef} />;
+  return <div style={{ height: "600px" }} ref={editorRef} />;
 }
 
 export default QuillEditor;
