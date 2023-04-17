@@ -30,7 +30,7 @@ interface QuillEditorProps {
 function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
   const divRef = useRef<HTMLDivElement>(null);
 
-  const [editor, setEditor] = useState<Quill | null>(null);
+  const editorRef = useRef<Quill | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -56,19 +56,19 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
         fileInputRef.current?.click();
       });
 
-      // 存入State
-      setEditor(quill);
+      // 存入Ref
+      editorRef.current = quill;
     }
   }, []);
 
   useEffect(() => {
     // 修改值
-    if (editor && onChange) {
-      editor.on("text-change", (delta, oldDelta, source) => {
-        onChange(editor.root.innerHTML);
+    if (editorRef.current && onChange) {
+      editorRef.current.on("text-change", (delta, oldDelta, source) => {
+        onChange(editorRef.current?.root.innerHTML || "");
       });
     }
-  }, [editor, onChange]);
+  }, [editorRef, onChange]);
 
   const handleFileInput = () => {
     const fileInput = fileInputRef.current;
@@ -76,16 +76,12 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
     const file = fileInput?.files?.[0];
 
     if (file) {
-      console.log(file);
-
       // 自訂的上傳程式碼
       uploadFile(file).then((url) => {
         // 上傳成功後插入圖片
-        const range = editor?.getEditor().getSelection() as RangeStatic;
+        const range = editorRef.current?.getSelection() as RangeStatic;
 
-        const img = `<img src="${url}"/>`;
-
-        editor?.getEditor().insertEmbed(range.index, "image", img);
+        editorRef.current?.insertEmbed(range.index, "image", url);
       });
     }
   };
@@ -94,7 +90,13 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
     // 範例
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve("https://picsum.photos/200/300");
+        let reader = new FileReader();
+
+        reader.onloadend = () => {
+          resolve(reader.result as string);
+        };
+
+        reader.readAsDataURL(file);
       }, 1000);
     });
   };
