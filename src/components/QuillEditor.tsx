@@ -104,7 +104,7 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
 
   return (
     <>
-      <div style={{ height: "600px" }} ref={divRef} />
+      <div style={{ height: "200px" }} ref={divRef} />
       <input
         type="file"
         ref={fileInputRef}

@@ -26,6 +26,8 @@ function App() {
       <QuillEditor defaultValue={value} onChange={handleChange} />
       <hr />
       <div dangerouslySetInnerHTML={createMarkup()}></div>
+      <hr />
+      <div>{value}</div>
     </div>
   );
 }
