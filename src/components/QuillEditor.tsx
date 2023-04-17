@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import Quill, { QuillOptionsStatic } from "quill";
+import Quill, { QuillOptionsStatic, RangeStatic } from "quill";
 import "quill/dist/quill.snow.css";
-import ImageUploader from "quill-image-uploader";
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
-  ["blockquote", "code-block"],
+  ["blockquote", "code-block", "image"],
 
   [{ header: 1 }, { header: 2 }], // custom button values
   [{ list: "ordered" }, { list: "bullet" }],
@@ -23,20 +22,6 @@ const toolbarOptions = [
   ["clean"], // remove formatting button
 ];
 
-const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-];
-
 interface QuillEditorProps {
   defaultValue?: string;
   onChange?: (value: string) => void;
@@ -47,53 +32,84 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
 
   const [editor, setEditor] = useState<Quill | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (editorRef.current) {
-      Quill.register("modules/imageUploader", ImageUploader);
-
-      const newEditor = new Quill(editorRef.current, {
+      // Quill初始化
+      let quill = new Quill(editorRef.current, {
         modules: {
           toolbar: toolbarOptions,
-          imageUploader: {
-            upload: (file: File) => {
-              return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                  resolve(
-                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/480px-JavaScript-logo.png"
-                  );
-                }, 3500);
-              });
-            },
-          },
         },
-        formats: formats,
+        placeholder: "input text.",
         theme: "snow",
       } as QuillOptionsStatic);
 
       // 預設值
-      newEditor.clipboard.dangerouslyPasteHTML(defaultValue || "");
+      quill.clipboard.dangerouslyPasteHTML(defaultValue || "");
 
-      setEditor(newEditor);
+      // 取得toolbar物件
+      const toolbar = quill.getModule("toolbar");
+
+      // 填加事件
+      toolbar.addHandler("image", () => {
+        fileInputRef.current?.click();
+      });
+
+      // 存入State
+      setEditor(quill);
     }
   }, []);
 
-  // useEffect(() => {
-  //   if (editor && defaultValue) {
-  //     editor.clipboard.dangerouslyPasteHTML(defaultValue);
-  //   }
-  // }, [editor, defaultValue]);
-
   useEffect(() => {
-    if (editor) {
+    // 修改值
+    if (editor && onChange) {
       editor.on("text-change", (delta, oldDelta, source) => {
-        if (onChange) {
-          onChange(editor.root.innerHTML);
-        }
+        onChange(editor.root.innerHTML);
       });
     }
   }, [editor, onChange]);
 
-  return <div style={{ height: "600px" }} ref={editorRef} />;
+  const handleFileInput = () => {
+    const fileInput = fileInputRef.current;
+
+    const file = fileInput?.files?.[0];
+
+    if (file) {
+      console.log(file);
+
+      // 自訂的上傳程式碼
+      uploadFile(file).then((url) => {
+        // 上傳成功後插入圖片
+        const range = editor?.getEditor().getSelection() as RangeStatic;
+
+        const img = `<img src="${url}"/>`;
+
+        editor?.getEditor().insertEmbed(range.index, "image", img);
+      });
+    }
+  };
+
+  const uploadFile = (file: File): Promise<string> => {
+    // 範例
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve("https://picsum.photos/200/300");
+      }, 1000);
+    });
+  };
+
+  return (
+    <>
+      <div style={{ height: "600px" }} ref={editorRef} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileInput}
+      />
+    </>
+  );
 }
 
 export default QuillEditor;

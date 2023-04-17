@@ -2,7 +2,7 @@ import { useState } from "react";
 import QuillEditor from "./components/QuillEditor";
 
 function App() {
-  const [value, setValue] = useState("<h1>Title</h1>");
+  const [value, setValue] = useState("");
 
   const onChange = (newValue: string) => {
     setValue(newValue);
