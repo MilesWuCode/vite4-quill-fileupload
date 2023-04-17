@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Quill, { QuillOptionsStatic, RangeStatic } from "quill";
 import "quill/dist/quill.snow.css";
 
@@ -76,9 +76,9 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
     const file = fileInput?.files?.[0];
 
     if (file) {
-      // 自訂的上傳程式碼
+      // 上傳檔案
       uploadFile(file).then((url) => {
-        // 上傳成功後插入圖片
+        // 插入圖片
         const range = editorRef.current?.getSelection() as RangeStatic;
 
         editorRef.current?.insertEmbed(range.index, "image", url);
@@ -86,8 +86,9 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
     }
   };
 
+  // 範例
   const uploadFile = (file: File): Promise<string> => {
-    // 範例
+    // 模擬上傳到伺服器
     return new Promise((resolve) => {
       setTimeout(() => {
         let reader = new FileReader();
