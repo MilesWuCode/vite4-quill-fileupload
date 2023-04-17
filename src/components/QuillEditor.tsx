@@ -28,16 +28,16 @@ interface QuillEditorProps {
 }
 
 function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
 
   const [editor, setEditor] = useState<Quill | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (editorRef.current) {
+    if (divRef.current) {
       // Quill初始化
-      let quill = new Quill(editorRef.current, {
+      let quill = new Quill(divRef.current, {
         modules: {
           toolbar: toolbarOptions,
         },
@@ -101,7 +101,7 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
 
   return (
     <>
-      <div style={{ height: "600px" }} ref={editorRef} />
+      <div style={{ height: "600px" }} ref={divRef} />
       <input
         type="file"
         ref={fileInputRef}
