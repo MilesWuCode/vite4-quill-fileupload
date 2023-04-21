@@ -1,20 +1,20 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QuillEditor from "./components/QuillEditor";
+import debounce from "lodash.debounce";
 
 function App() {
   const [value, setValue] = useState("");
 
-  const debounceRef = useRef(0);
+  const handleChange = (newValue: string) => {
+    setValue(newValue);
+  };
 
-  const handleChange = useCallback((newValue: string) => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+  const debouncedChangeHandler = useMemo(() => debounce(handleChange, 300), []);
 
-    debounceRef.current = setTimeout(() => {
-      console.log(newValue);
-      setValue(newValue);
-    }, 400);
+  useEffect(() => {
+    return () => {
+      debouncedChangeHandler.cancel();
+    };
   }, []);
 
   function createMarkup() {
@@ -23,7 +23,7 @@ function App() {
 
   return (
     <div className="App">
-      <QuillEditor defaultValue={value} onChange={handleChange} />
+      <QuillEditor defaultValue={value} onChange={debouncedChangeHandler} />
       <hr />
       <div dangerouslySetInnerHTML={createMarkup()}></div>
       <hr />

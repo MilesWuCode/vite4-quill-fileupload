@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import Quill, { QuillOptionsStatic, RangeStatic } from "quill";
 import "quill/dist/quill.snow.css";
+import axios from "axios";
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -88,17 +89,20 @@ function QuillEditor({ defaultValue, onChange }: QuillEditorProps) {
 
   // 範例
   const uploadFile = (file: File): Promise<string> => {
-    // 模擬上傳到伺服器
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      const fd = new FormData();
 
-        reader.onloadend = () => {
-          resolve(reader.result as string);
-        };
+      fd.append("file", file);
 
-        reader.readAsDataURL(file);
-      }, 1000);
+      axios
+        .post("http://localhost:3000/upload", fd)
+        .then((data: any) => {
+          console.log(data);
+          resolve(data.data.url);
+        })
+        .catch((err: any) => {
+          reject(err);
+        });
     });
   };
 
